@@ -1,0 +1,30 @@
+name: Daily Activity Streak
+
+on:
+  schedule:
+    - cron: '7 0,12 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-streak:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update Activity Log
+        run: |
+          mkdir -p data
+          timestamp=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          echo "[$timestamp] Daily automated commit" >> data/activity.log
+          tail -n 200 data/activity.log > data/activity.log.tmp && mv data/activity.log.tmp data/activity.log
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "Ihsanmubina"
+          git config --global user.email "224587605+Ihsanmubina@users.noreply.github.com"
+          git add data/activity.log
+          git commit -m "chore(streak): daily activity $(date -u +'%Y-%m-%d')" || exit 0
+          git push
